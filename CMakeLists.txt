@@ -110,5 +110,12 @@ endif()
 # Target properties
 set_target_properties(main PROPERTIES OUTPUT_NAME ${CMAKE_PROJECT_NAME})
 
+# Copy key folder
+add_custom_command(TARGET main POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/key
+        key
+)
+
 add_subdirectory("external")
 add_subdirectory("src")
