@@ -95,3 +95,6 @@ dkms.conf
 
 # Build directory
 build/
+
+# Key directory
+key/
