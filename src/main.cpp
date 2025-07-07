@@ -13,7 +13,7 @@ int main()
 	ssh_session session = ssh_new();
 
 	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT, "9393");
-	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, "key");
+	ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, "key/id_ed25519");
 
 	if (ssh_bind_listen(sshbind) < 0) {
 		std::cerr << "Error listening: " << ssh_get_error(sshbind) << std::endl;
