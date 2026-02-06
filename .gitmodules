@@ -1,3 +1,6 @@
 [submodule "external/libssh"]
 	path = external/libssh
 	url = https://git.libssh.org/projects/libssh.git
+[submodule "external/mbedtls"]
+	path = external/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls.git
