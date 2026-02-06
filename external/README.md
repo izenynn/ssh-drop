@@ -1,5 +1,11 @@
 # External libraries
 
+## mbedtls
+
+- Upstream: <https://github.com/Mbed-TLS/mbedtls.git>
+- Version: 4.0.0 (ec4044008d2d069da38288bc76b0fee34ec78646, 2025)
+- License: Dual License (Apache 2.0 OR GPL 2.0)
+
 ## libssh
 
 - Upstream: <https://git.libssh.org/projects/libssh.git/>
