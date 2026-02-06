@@ -87,6 +87,40 @@ compile_commands.json
 compile_flags.txt
 **/compile_flags.txt
 
+# AI assistant project files
+.claude/
+.cursor/
+.aider*
+.copilot/
+.continue/
+.sourcegraph/
+
+# AI conversation/context files
+.clinerules
+.cursorrules
+.aiderignore
+.continuerc.json
+aider.tags.cache.v3/
+
+# AI-generated artifacts
+*.ai.md
+*-ai-generated.*
+
+# AI API keys
+*.anthropic.key
+*.openai.key
+.env.ai
+.env.openai
+.env.anthropic
+
+# Windows reserved names (AI generates these when running Linux commands in Windows)
+nul
+con
+prn
+aux
+com[1-9]
+lpt[1-9]
+
 # Miscellaneous
 modules.order
 Module.symvers
