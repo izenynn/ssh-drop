@@ -21,24 +21,28 @@ ConnectionHandler::ConnectionHandler(SshSession		    session,
 
 void ConnectionHandler::run()
 {
-	int methods = authenticator_.supported_methods();
-	requires_both_ =
-			(methods & SSH_AUTH_METHOD_PUBLICKEY) != 0
-			&& (methods & SSH_AUTH_METHOD_PASSWORD) != 0;
+	int supported  = authenticator_.supported_methods();
+	requires_both_ = supported
+			 == (SSH_AUTH_METHOD_PUBLICKEY
+			     | SSH_AUTH_METHOD_PASSWORD);
 
 	ssh_server_callbacks_struct server_cb		= {};
 	server_cb.userdata				= this;
 	server_cb.channel_open_request_session_function = on_channel_open;
 
-	if (methods & SSH_AUTH_METHOD_PUBLICKEY)
+	if (supported & SSH_AUTH_METHOD_PUBLICKEY)
 		server_cb.auth_pubkey_function = on_auth_pubkey;
-	if (methods & SSH_AUTH_METHOD_PASSWORD)
+	if (supported & SSH_AUTH_METHOD_PASSWORD)
 		server_cb.auth_password_function = on_auth_password;
 
 	ssh_callbacks_init(&server_cb);
 
 	session_.set_server_callbacks(&server_cb);
-	session_.set_auth_methods(methods);
+
+	// Only reveal pubkey initially if both required for security
+	const int initial =
+			requires_both_ ? SSH_AUTH_METHOD_PUBLICKEY : supported;
+	session_.set_auth_methods(initial);
 
 	session_.handle_key_exchange();
 
@@ -89,8 +93,7 @@ void ConnectionHandler::run()
 	log::info("Secret delivered");
 }
 
-int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/,
-				      const char*    user,
+int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/, const char* user,
 				      ssh_key_struct* pubkey,
 				      char signature_state, void* userdata)
 {
@@ -109,8 +112,7 @@ int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/,
 			return SSH_AUTH_DENIED;
 		}
 
-		if (self->requires_both_
-		    && !self->password_passed_) {
+		if (self->requires_both_) {
 			self->pubkey_passed_ = true;
 			self->session_.set_auth_methods(
 					SSH_AUTH_METHOD_PASSWORD);
@@ -131,21 +133,19 @@ int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/,
 }
 
 int ConnectionHandler::on_auth_password(ssh_session /*session*/,
-					const char* user,
-					const char* password, void* userdata)
+					const char* user, const char* password,
+					void* userdata)
 {
 	auto* self = static_cast<ConnectionHandler*>(userdata);
 
-	if (!self->authenticator_.check_password(password)) {
+	if (self->requires_both_ && !self->pubkey_passed_) {
 		log::warn("Authentication denied");
 		return SSH_AUTH_DENIED;
 	}
 
-	if (self->requires_both_ && !self->pubkey_passed_) {
-		self->password_passed_ = true;
-		self->session_.set_auth_methods(
-				SSH_AUTH_METHOD_PUBLICKEY);
-		return SSH_AUTH_PARTIAL;
+	if (!self->authenticator_.check_password(password)) {
+		log::warn("Authentication denied");
+		return SSH_AUTH_DENIED;
 	}
 
 	if (!self->authenticator_.check_user(user)) {

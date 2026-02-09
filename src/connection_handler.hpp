@@ -39,9 +39,8 @@ private:
 	bool	    authenticated_ = false;
 	bool	    got_shell_	   = false;
 
-	bool pubkey_passed_   = false;
-	bool password_passed_ = false;
-	bool requires_both_   = false;
+	bool pubkey_passed_ = false;
+	bool requires_both_ = false;
 };
 
 } // namespace drop
