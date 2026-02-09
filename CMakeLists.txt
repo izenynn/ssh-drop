@@ -6,6 +6,22 @@ cmake_policy(SET CMP0075 NEW)
 cmake_policy(SET CMP0091 NEW)
 
 # **************************************************************************** #
+#                                   PROJECT                                    #
+# **************************************************************************** #
+
+project(ssh-drop)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    # Static compilation of runtime library
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif ()
+
+# Set c++ standard and force it into the cache
+set(CMAKE_CXX_STANDARD 20 CACHE STRING "" FORCE)
+# Force generation of a compile commands file
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
+
+# **************************************************************************** #
 #                                  PROFILES                                    #
 # **************************************************************************** #
 
@@ -65,22 +81,6 @@ function(add_warn_flags target)
         target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic)
     endif ()
 endfunction()
-
-# **************************************************************************** #
-#                                   PROJECT                                    #
-# **************************************************************************** #
-
-project(ssh-drop)
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    # Static compilation of runtime library
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif ()
-
-# Set c++ standard and force it into the cache
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "" FORCE)
-# Force generation of a compile commands file
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
 
 # **************************************************************************** #
 #                                  EXECUTABLE                                  #
