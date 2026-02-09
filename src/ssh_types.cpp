@@ -10,10 +10,8 @@
 
 namespace drop {
 
-// ─── SshSession ─────────────────────────────────────────────────────────────
-
 SshSession::SshSession()
-	: session_{ssh_new()}
+    : session_{ssh_new()}
 {
 	if (!session_)
 		throw SshError{"ssh_new failed"};
@@ -28,7 +26,7 @@ SshSession::~SshSession()
 }
 
 SshSession::SshSession(SshSession&& other) noexcept
-	: session_{std::exchange(other.session_, nullptr)}
+    : session_{std::exchange(other.session_, nullptr)}
 {
 }
 
@@ -61,10 +59,8 @@ void SshSession::handle_key_exchange()
 		throw SshError::from(session_, "Key exchange failed");
 }
 
-// ─── SshBind ────────────────────────────────────────────────────────────────
-
 SshBind::SshBind()
-	: bind_{ssh_bind_new()}
+    : bind_{ssh_bind_new()}
 {
 	if (!bind_)
 		throw SshError{"ssh_bind_new failed"};
@@ -77,7 +73,7 @@ SshBind::~SshBind()
 }
 
 SshBind::SshBind(SshBind&& other) noexcept
-	: bind_{std::exchange(other.bind_, nullptr)}
+    : bind_{std::exchange(other.bind_, nullptr)}
 {
 }
 
@@ -93,13 +89,16 @@ SshBind& SshBind::operator=(SshBind&& other) noexcept
 
 void SshBind::set_port(const std::string& port)
 {
-	if (ssh_bind_options_set(bind_, SSH_BIND_OPTIONS_BINDPORT_STR, port.c_str()) != SSH_OK)
+	if (ssh_bind_options_set(bind_, SSH_BIND_OPTIONS_BINDPORT_STR,
+				 port.c_str())
+	    != SSH_OK)
 		throw SshError::from(bind_, "Failed to set bind port");
 }
 
 void SshBind::set_host_key(const std::string& path)
 {
-	if (ssh_bind_options_set(bind_, SSH_BIND_OPTIONS_HOSTKEY, path.c_str()) != SSH_OK)
+	if (ssh_bind_options_set(bind_, SSH_BIND_OPTIONS_HOSTKEY, path.c_str())
+	    != SSH_OK)
 		throw SshError::from(bind_, "Failed to set host key");
 }
 
@@ -126,10 +125,11 @@ bool SshBind::accept(SshSession& session, int timeout_ms)
 	FD_SET(fd, &read_fds);
 
 	struct timeval tv;
-	tv.tv_sec = timeout_ms / 1000;
+	tv.tv_sec  = timeout_ms / 1000;
 	tv.tv_usec = (timeout_ms % 1000) * 1000;
 
-	int rc = select(static_cast<int>(fd) + 1, &read_fds, nullptr, nullptr, &tv);
+	int rc = select(static_cast<int>(fd) + 1, &read_fds, nullptr, nullptr,
+			&tv);
 	if (rc < 0)
 		throw SshError{"select() failed on bind fd"};
 	if (rc == 0)
@@ -141,10 +141,8 @@ bool SshBind::accept(SshSession& session, int timeout_ms)
 	return true;
 }
 
-// ─── SshChannel ─────────────────────────────────────────────────────────────
-
 SshChannel::SshChannel(ssh_channel raw)
-	: channel_{raw}
+    : channel_{raw}
 {
 	if (!channel_)
 		throw SshError{"Failed to open channel"};
@@ -159,7 +157,7 @@ SshChannel::~SshChannel()
 }
 
 SshChannel::SshChannel(SshChannel&& other) noexcept
-	: channel_{std::exchange(other.channel_, nullptr)}
+    : channel_{std::exchange(other.channel_, nullptr)}
 {
 }
 
@@ -183,7 +181,8 @@ void SshChannel::set_callbacks(ssh_channel_callbacks cb)
 
 void SshChannel::write(std::string_view data)
 {
-	ssh_channel_write(channel_, data.data(), static_cast<uint32_t>(data.size()));
+	ssh_channel_write(channel_, data.data(),
+			  static_cast<uint32_t>(data.size()));
 }
 
 void SshChannel::send_eof()
@@ -196,10 +195,8 @@ void SshChannel::close()
 	ssh_channel_close(channel_);
 }
 
-// ─── SshEvent ───────────────────────────────────────────────────────────────
-
 SshEvent::SshEvent()
-	: event_{ssh_event_new()}
+    : event_{ssh_event_new()}
 {
 	if (!event_)
 		throw SshError{"ssh_event_new failed"};
@@ -212,7 +209,7 @@ SshEvent::~SshEvent()
 }
 
 SshEvent::SshEvent(SshEvent&& other) noexcept
-	: event_{std::exchange(other.event_, nullptr)}
+    : event_{std::exchange(other.event_, nullptr)}
 {
 }
 

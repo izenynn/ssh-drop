@@ -11,15 +11,15 @@ namespace drop {
 
 class DropServer {
 public:
-	DropServer(ServerConfig config,
-	           std::unique_ptr<IAuthenticator> authenticator,
-	           std::unique_ptr<ISecretProvider> secret_provider);
+	DropServer(ServerConfig			    config,
+		   std::unique_ptr<IAuthenticator>  authenticator,
+		   std::unique_ptr<ISecretProvider> secret_provider);
 
 	void run(std::atomic<bool>& running);
 
 private:
-	ServerConfig config_;
-	std::unique_ptr<IAuthenticator> authenticator_;
+	ServerConfig			 config_;
+	std::unique_ptr<IAuthenticator>	 authenticator_;
 	std::unique_ptr<ISecretProvider> secret_provider_;
 };
 

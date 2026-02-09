@@ -17,17 +17,20 @@ int main(int argc, char* argv[])
 		auto config = drop::ServerConfig::load(argc, argv);
 		config.validate();
 
-		drop::log::init(drop::log::level_from_string(config.log_level), config.log_file);
+		drop::log::init(drop::log::level_from_string(config.log_level),
+				config.log_file);
 		drop::log::info("ssh-drop starting");
 
 		drop::SshLibGuard lib;
 		std::atomic<bool> running{true};
 		drop::SignalGuard signals{running};
 
-		auto auth = std::make_unique<drop::AuthorizedKeysAuthenticator>(config.authorized_keys_path);
+		auto auth = std::make_unique<drop::AuthorizedKeysAuthenticator>(
+				config.authorized_keys_path);
 		auto secret = drop::make_secret_provider(config);
 
-		drop::DropServer server{std::move(config), std::move(auth), std::move(secret)};
+		drop::DropServer server{std::move(config), std::move(auth),
+					std::move(secret)};
 		server.run(running);
 	} catch (const drop::SshError& e) {
 		drop::log::error(e.what());

@@ -14,12 +14,15 @@ public:
 			throw SshError{"ssh_init failed"};
 	}
 
-	~SshLibGuard() { ssh_finalize(); }
+	~SshLibGuard()
+	{
+		ssh_finalize();
+	}
 
-	SshLibGuard(const SshLibGuard&) = delete;
+	SshLibGuard(const SshLibGuard&)		   = delete;
 	SshLibGuard& operator=(const SshLibGuard&) = delete;
-	SshLibGuard(SshLibGuard&&) = delete;
-	SshLibGuard& operator=(SshLibGuard&&) = delete;
+	SshLibGuard(SshLibGuard&&)		   = delete;
+	SshLibGuard& operator=(SshLibGuard&&)	   = delete;
 };
 
 } // namespace drop

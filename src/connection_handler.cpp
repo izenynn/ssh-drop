@@ -7,20 +7,20 @@
 
 namespace drop {
 
-ConnectionHandler::ConnectionHandler(SshSession session,
-                                     const IAuthenticator& authenticator,
-                                     const ISecretProvider& secret_provider)
-	: session_{std::move(session)}
-	, authenticator_{authenticator}
-	, secret_provider_{secret_provider}
+ConnectionHandler::ConnectionHandler(SshSession		    session,
+				     const IAuthenticator&  authenticator,
+				     const ISecretProvider& secret_provider)
+    : session_{std::move(session)},
+      authenticator_{authenticator},
+      secret_provider_{secret_provider}
 {
 }
 
 void ConnectionHandler::run()
 {
-	ssh_server_callbacks_struct server_cb = {};
-	server_cb.userdata = this;
-	server_cb.auth_pubkey_function = on_auth_pubkey;
+	ssh_server_callbacks_struct server_cb		= {};
+	server_cb.userdata				= this;
+	server_cb.auth_pubkey_function			= on_auth_pubkey;
 	server_cb.channel_open_request_session_function = on_channel_open;
 	ssh_callbacks_init(&server_cb);
 
@@ -38,7 +38,8 @@ void ConnectionHandler::run()
 				ssh_channel_free(raw_channel_);
 				raw_channel_ = nullptr;
 			}
-			throw SshError::from(session_.get(), "Event poll failed during auth");
+			throw SshError::from(session_.get(),
+					     "Event poll failed during auth");
 		}
 	}
 
@@ -47,8 +48,8 @@ void ConnectionHandler::run()
 	SshChannel channel{raw_channel_};
 	raw_channel_ = nullptr;
 
-	ssh_channel_callbacks_struct channel_cb = {};
-	channel_cb.userdata = this;
+	ssh_channel_callbacks_struct channel_cb	  = {};
+	channel_cb.userdata			  = this;
 	channel_cb.channel_shell_request_function = on_shell_request;
 	ssh_callbacks_init(&channel_cb);
 
@@ -56,7 +57,9 @@ void ConnectionHandler::run()
 
 	while (!got_shell_) {
 		if (event.poll(100) == SSH_ERROR)
-			throw SshError::from(session_.get(), "Event poll failed waiting for shell");
+			throw SshError::from(
+					session_.get(),
+					"Event poll failed waiting for shell");
 	}
 
 	std::string secret = secret_provider_.get_secret();
@@ -66,9 +69,10 @@ void ConnectionHandler::run()
 	log::info("Secret delivered");
 }
 
-int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/, const char* /*user*/,
-                                      ssh_key_struct* pubkey, char signature_state,
-                                      void* userdata)
+int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/,
+				      const char* /*user*/,
+				      ssh_key_struct* pubkey,
+				      char signature_state, void* userdata)
 {
 	auto* self = static_cast<ConnectionHandler*>(userdata);
 
@@ -90,17 +94,18 @@ int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/, const char* /*use
 	return SSH_AUTH_DENIED;
 }
 
-ssh_channel ConnectionHandler::on_channel_open(ssh_session session, void* userdata)
+ssh_channel ConnectionHandler::on_channel_open(ssh_session session,
+					       void*	   userdata)
 {
-	auto* self = static_cast<ConnectionHandler*>(userdata);
+	auto* self	   = static_cast<ConnectionHandler*>(userdata);
 	self->raw_channel_ = ssh_channel_new(session);
 	return self->raw_channel_;
 }
 
 int ConnectionHandler::on_shell_request(ssh_session /*session*/,
-                                        ssh_channel /*channel*/, void* userdata)
+					ssh_channel /*channel*/, void* userdata)
 {
-	auto* self = static_cast<ConnectionHandler*>(userdata);
+	auto* self	 = static_cast<ConnectionHandler*>(userdata);
 	self->got_shell_ = true;
 	return 0;
 }

@@ -1,14 +1,21 @@
-# Generated from CLion C/C++ Code Style settings
+# C++ formatting config by izenynn (www.izenynn.com)
 ---
 Language: Cpp
 BasedOnStyle: LLVM
+
 AccessModifierOffset: -8
-AlignConsecutiveAssignments: false
-AlignConsecutiveDeclarations: false
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveMacros: Consecutive
+AlignEscapedNewlines: Left
 AlignOperands: true
-AlignTrailingComments: false
-AlwaysBreakTemplateDeclarations: Yes
-BraceWrapping: 
+AlignTrailingComments: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortLambdasOnASingleLine: None
+BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: false
@@ -25,13 +32,25 @@ BraceWrapping:
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
+BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Custom
-BreakConstructorInitializers: AfterColon
-BreakConstructorInitializersBeforeComma: false
-ColumnLimit: 120
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+BreakStringLiterals: false
+BreakTemplateDeclarations: Yes
+ColumnLimit: 80
 ContinuationIndentWidth: 16
-IncludeCategories: 
+Cpp11BracedListStyle: true
+EmptyLineBeforeAccessModifier: Always
+EmptyLineAfterAccessModifier: Never
+IndentAccessModifiers: false
+IndentCaseBlocks: false
+IndentCaseLabels: false
+IndentGotoLabels: false
+IndentPPDirectives: None
+IndentWidth: 8
+IncludeCategories:
   - Regex: '^<.*'
     Priority: 1
   - Regex: '^".*'
@@ -39,21 +58,23 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentCaseLabels: true
-IndentWidth: 8
+InsertBraces: false
 InsertNewlineAtEOF: true
+InsertTrailingCommas: None
 MacroBlockBegin: ''
 MacroBlockEnd: ''
-MaxEmptyLinesToKeep: 2
-NamespaceIndentation: All
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+PackConstructorInitializers: NextLineOnly
 PointerAlignment: Left
-SpaceAfterCStyleCast: true
+SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: false
-SpaceBeforeRangeBasedForLoopColon: false
+SpaceBeforeCaseColon: false
+SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
 SpacesInAngles: false
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
+TabWidth: 8
 UseTab: Always
-...

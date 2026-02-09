@@ -19,7 +19,8 @@ ServerConfig ServerConfig::load(int argc, char* argv[])
 
 	if (!std::filesystem::exists(path)) {
 		if (argc >= 2)
-			throw std::runtime_error{"Config file not found: " + path.string()};
+			throw std::runtime_error{"Config file not found: "
+						 + path.string()};
 		return {};
 	}
 
@@ -30,21 +31,21 @@ ServerConfig ServerConfig::load(int argc, char* argv[])
 void ServerConfig::validate() const
 {
 	int count = (!secret_value.empty() ? 1 : 0)
-	          + (!secret_file_path.empty() ? 1 : 0)
-	          + (!secret_env_name.empty() ? 1 : 0);
+		    + (!secret_file_path.empty() ? 1 : 0)
+		    + (!secret_env_name.empty() ? 1 : 0);
 
 	if (count > 1)
 		throw std::runtime_error{
-			"Specify exactly one of secret, secret_file, secret_env"};
+				"Specify exactly one of secret, secret_file, secret_env"};
 
 	if (count == 0)
 		throw std::runtime_error{
-			"No secret source configured "
-			"(set secret, secret_file, or secret_env)"};
+				"No secret source configured "
+				"(set secret, secret_file, or secret_env)"};
 }
 
-ServerConfig ServerConfig::from_map(
-	const std::unordered_map<std::string, std::string>& m)
+ServerConfig
+ServerConfig::from_map(const std::unordered_map<std::string, std::string>& m)
 {
 	ServerConfig cfg;
 

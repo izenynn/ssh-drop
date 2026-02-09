@@ -45,6 +45,7 @@ private:
 	std::filesystem::path path_;
 };
 
-[[nodiscard]] std::unique_ptr<ISecretProvider> make_secret_provider(const ServerConfig& config);
+[[nodiscard]] std::unique_ptr<ISecretProvider>
+make_secret_provider(const ServerConfig& config);
 
 } // namespace drop

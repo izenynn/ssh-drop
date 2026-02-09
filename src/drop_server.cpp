@@ -9,12 +9,12 @@
 
 namespace drop {
 
-DropServer::DropServer(ServerConfig config,
-                       std::unique_ptr<IAuthenticator> authenticator,
-                       std::unique_ptr<ISecretProvider> secret_provider)
-	: config_{std::move(config)}
-	, authenticator_{std::move(authenticator)}
-	, secret_provider_{std::move(secret_provider)}
+DropServer::DropServer(ServerConfig			config,
+		       std::unique_ptr<IAuthenticator>	authenticator,
+		       std::unique_ptr<ISecretProvider> secret_provider)
+    : config_{std::move(config)},
+      authenticator_{std::move(authenticator)},
+      secret_provider_{std::move(secret_provider)}
 {
 }
 
@@ -36,7 +36,9 @@ void DropServer::run(std::atomic<bool>& running)
 		log::info("Connection accepted");
 
 		try {
-			ConnectionHandler handler{std::move(session), *authenticator_, *secret_provider_};
+			ConnectionHandler handler{std::move(session),
+						  *authenticator_,
+						  *secret_provider_};
 			handler.run();
 		} catch (const std::exception& e) {
 			log::error(e.what());

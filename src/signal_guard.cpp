@@ -13,26 +13,22 @@ namespace {
 std::atomic<bool>* g_running = nullptr;
 
 #ifdef _WIN32
-
 BOOL WINAPI console_handler(DWORD event)
 {
-	if (event == CTRL_C_EVENT || event == CTRL_BREAK_EVENT ||
-	    event == CTRL_CLOSE_EVENT) {
+	if (event == CTRL_C_EVENT || event == CTRL_BREAK_EVENT
+	    || event == CTRL_CLOSE_EVENT) {
 		if (g_running)
 			g_running->store(false, std::memory_order_relaxed);
 		return TRUE;
 	}
 	return FALSE;
 }
-
 #else
-
 void signal_handler(int /*sig*/)
 {
 	if (g_running)
 		g_running->store(false, std::memory_order_relaxed);
 }
-
 #endif
 
 } // namespace
