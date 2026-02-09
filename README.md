@@ -1,19 +1,25 @@
 # SSH Drop
 
 Minimal SSH server that securely delivers a secret to authenticated clients.
+
 Connect, authenticate, receive your secret, done.
 
-> [!NOTE]
-> Linux only. Designed for server environments.
-
 > [!WARNING]
-> This software has not been independently tested, audited, or reviewed for security. Use it at your own risk and do not rely on it in security-critical environments.
+> This software has not been independently tested, audited, or reviewed for security. Use it at your own risk and do not
+> rely on it in security-critical environments.
+
+## Supported Platforms
+
+| Platform | Status    |
+|----------|-----------|
+| Linux    | Supported |
 
 ## Features
 
 - **Flexible authentication:** public key, password, or both (multi-factor)
 - **Optional username check:** restrict connections to a specific SSH username
-- **Three secret sources:** inline value, file on disk, or environment variable — each optionally encrypted (client provides passphrase)
+- **Three secret sources:** inline value, file on disk, or environment variable — each optionally encrypted (client
+  provides passphrase)
 - **Concurrent connections:** thread-per-connection model, no queueing
 - **Auth timeout:** configurable timeout for the authentication phase (default 30 s)
 - **Startup validation:** port range, key files, and secret source are checked before binding
@@ -49,7 +55,8 @@ The resulting binaries are in `build/<build-type>/`.
 
 ## Configuration
 
-A config file is **mandatory**. ssh-drop reads it from `config/ssh-drop.conf` by default, or from a path passed as the first argument:
+A config file is **mandatory**. ssh-drop reads it from `config/ssh-drop.conf` by default, or from a path passed as the
+first argument:
 
 ```bash
 ./ssh-drop /etc/ssh-drop/ssh-drop.conf
@@ -75,26 +82,26 @@ A secret source is also required — exactly one of:
 
 ### Conditionally required fields
 
-| Key               | Required when                              | Description                         |
-|-------------------|--------------------------------------------|-------------------------------------|
-| `authorized_keys` | `auth_method` is `publickey` or `both`     | Path to the authorized public keys file |
+| Key               | Required when                          | Description                             |
+|-------------------|----------------------------------------|-----------------------------------------|
+| `authorized_keys` | `auth_method` is `publickey` or `both` | Path to the authorized public keys file |
 
 A password source is required when `auth_method` is `password` or `both` — exactly one of:
 
-| Key                  | Description                                         |
-|----------------------|-----------------------------------------------------|
-| `auth_password`      | Inline password value                               |
-| `auth_password_file` | Path to a file whose contents are the password      |
+| Key                  | Description                                          |
+|----------------------|------------------------------------------------------|
+| `auth_password`      | Inline password value                                |
+| `auth_password_file` | Path to a file whose contents are the password       |
 | `auth_password_env`  | Name of an environment variable holding the password |
 
 ### Optional fields
 
-| Key                | Default   | Description                                              |
-|--------------------|-----------|----------------------------------------------------------|
-| `auth_timeout`     | `30`      | Seconds before an unauthenticated connection is dropped  |
-| `log_level`        | `info`    | Minimum log level: `debug`, `info`, `warn`, `error`      |
-| `log_file`         | *(empty)* | Path to a log file (see below)                           |
-| `secret_encrypted` | `false`   | Set to `true` if the secret is encrypted (see below)     |
+| Key                | Default   | Description                                             |
+|--------------------|-----------|---------------------------------------------------------|
+| `auth_timeout`     | `30`      | Seconds before an unauthenticated connection is dropped |
+| `log_level`        | `info`    | Minimum log level: `debug`, `info`, `warn`, `error`     |
+| `log_file`         | *(empty)* | Path to a log file (see below)                          |
+| `secret_encrypted` | `false`   | Set to `true` if the secret is encrypted (see below)    |
 
 When `log_file` is omitted, errors go to stderr and everything else to stdout.
 When `log_file` is set, output goes to **both** the console (as above) and the file.
@@ -109,31 +116,35 @@ Clients authenticate with a key listed in the `authorized_keys` file (`auth_meth
 
 Set `auth_method = password` and provide exactly one password source:
 
-| Key                  | Description                                         |
-|----------------------|-----------------------------------------------------|
-| `auth_password`      | Inline password value                               |
-| `auth_password_file` | Path to a file whose contents are the password      |
+| Key                  | Description                                          |
+|----------------------|------------------------------------------------------|
+| `auth_password`      | Inline password value                                |
+| `auth_password_file` | Path to a file whose contents are the password       |
 | `auth_password_env`  | Name of an environment variable holding the password |
 
 #### Both mode (multi-factor)
 
-Set `auth_method = both` to require **both** a valid public key **and** a correct password. The server enforces a strict pubkey-first order: only the public key method is advertised initially. The password prompt is only revealed after the key is verified via SSH partial authentication. This prevents attackers from brute-forcing passwords without a valid key.
+Set `auth_method = both` to require **both** a valid public key **and** a correct password. The server enforces a strict
+pubkey-first order: only the public key method is advertised initially. The password prompt is only revealed after the
+key is verified via SSH partial authentication. This prevents attackers from brute-forcing passwords without a valid
+key.
 
 #### Username check (optional, any mode)
 
 To restrict which SSH username is accepted, set exactly one:
 
-| Key              | Description                                       |
-|------------------|---------------------------------------------------|
-| `auth_user`      | Inline username value                             |
-| `auth_user_file` | Path to a file whose contents are the username    |
+| Key              | Description                                          |
+|------------------|------------------------------------------------------|
+| `auth_user`      | Inline username value                                |
+| `auth_user_file` | Path to a file whose contents are the username       |
 | `auth_user_env`  | Name of an environment variable holding the username |
 
 When set, the connecting client's SSH username must match. When omitted, any username is accepted.
 
 ### File source tips
 
-`secret_file`, `auth_password_file`, and `auth_user_file` read the **entire** file contents, including any trailing newline. Use `echo -n` or `printf` when writing these files to avoid an unintended trailing newline:
+`secret_file`, `auth_password_file`, and `auth_user_file` read the **entire** file contents, including any trailing
+newline. Use `echo -n` or `printf` when writing these files to avoid an unintended trailing newline:
 
 ```bash
 printf 'my-secret-value' > /etc/ssh-drop/secret
@@ -141,9 +152,13 @@ printf 'my-secret-value' > /etc/ssh-drop/secret
 
 ### Encrypted secret
 
-When `secret_encrypted = true`, the secret source (whichever of `secret`, `secret_file`, or `secret_env` is used) is expected to contain base64-encoded encrypted data. The client must send the decryption passphrase as the first line of input after connecting. The passphrase never touches disk — it exists only in memory for the instant needed to decrypt, then is discarded.
+When `secret_encrypted = true`, the secret source (whichever of `secret`, `secret_file`, or `secret_env` is used) is
+expected to contain base64-encoded encrypted data. The client must send the decryption passphrase as the first line of
+input after connecting. The passphrase never touches disk — it exists only in memory for the instant needed to decrypt,
+then is discarded.
 
-**Encryption scheme:** PBKDF2-SHA256 (210,000 iterations) derives a 256-bit key, which is used with AES-256-GCM for authenticated encryption. The output is base64-encoded text, so it works with all three secret sources.
+**Encryption scheme:** PBKDF2-SHA256 (210,000 iterations) derives a 256-bit key, which is used with AES-256-GCM for
+authenticated encryption. The output is base64-encoded text, so it works with all three secret sources.
 
 #### 1. Encrypt a secret
 
@@ -159,7 +174,8 @@ You will be prompted for a passphrase (twice for confirmation) and the secret va
 ssh-drop --decrypt secret/secret.enc
 ```
 
-You will be prompted for the passphrase. On success the decrypted secret is printed to stdout; on failure (wrong passphrase, missing file) an error is printed to stderr and the exit code is 1.
+You will be prompted for the passphrase. On success the decrypted secret is printed to stdout; on failure (wrong
+passphrase, missing file) an error is printed to stderr and the exit code is 1.
 
 #### 2. Configure the server
 
@@ -174,7 +190,8 @@ secret_encrypted = true
 echo "my-passphrase" | ssh user@host -p 7022
 ```
 
-The client pipes the passphrase into the SSH session. The server reads it, decrypts the secret, writes the plaintext back, and closes the connection.
+The client pipes the passphrase into the SSH session. The server reads it, decrypts the secret, writes the plaintext
+back, and closes the connection.
 
 ### Example configs
 
