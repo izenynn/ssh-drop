@@ -14,7 +14,7 @@ struct ServerConfig {
 	std::string log_file;
 
 	std::string secret_value;
-	std::string secret_file_path;
+	std::string secret_file_path = "secret/secret";
 	std::string secret_env_name;
 
 	static ServerConfig load(int argc, char* argv[]);

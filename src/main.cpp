@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
 		drop::log::init(drop::log::level_from_string(config.log_level),
 				config.log_file);
-		drop::log::info("ssh-drop starting");
+		drop::log::info("Starting");
 
 		drop::SshLibGuard lib;
 		std::atomic<bool> running{true};

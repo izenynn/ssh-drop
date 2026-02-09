@@ -64,6 +64,12 @@ ServerConfig::from_map(const std::unordered_map<std::string, std::string>& m)
 		cfg.log_level = *v;
 	if (auto* v = get("log_file"))
 		cfg.log_file = *v;
+	if (m.count("secret") || m.count("secret_file")
+	    || m.count("secret_env")) {
+		cfg.secret_value     = {};
+		cfg.secret_file_path = {};
+		cfg.secret_env_name  = {};
+	}
 	if (auto* v = get("secret"))
 		cfg.secret_value = *v;
 	if (auto* v = get("secret_file"))

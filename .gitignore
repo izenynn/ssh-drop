@@ -132,3 +132,6 @@ build/
 
 # Key directory
 key/
+
+# Secret directory
+secret/
