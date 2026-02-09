@@ -8,6 +8,16 @@ Connect, authenticate, receive your secret, done.
 > This software has not been independently tested, audited, or reviewed for security. Use it at your own risk and do not
 > rely on it in security-critical environments.
 
+## Table of Contents
+
+- [Supported Platforms](#supported-platforms)
+- [Features](#features)
+- [Build](#build)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Deployment](#deployment)
+- [License](#license)
+
 ## Supported Platforms
 
 | Platform | Status    |
