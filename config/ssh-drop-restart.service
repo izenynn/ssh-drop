@@ -1,0 +1,6 @@
+[Unit]
+Description=Restart ssh-drop server
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl restart ssh-drop.service
