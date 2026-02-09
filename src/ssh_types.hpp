@@ -55,6 +55,7 @@ public:
 	void set_host_key(const std::string& path);
 	void listen();
 	void accept(SshSession& session);
+	bool accept(SshSession& session, int timeout_ms);
 
 	ssh_bind get() const noexcept { return bind_; }
 

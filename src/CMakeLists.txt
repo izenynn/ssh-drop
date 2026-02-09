@@ -4,4 +4,9 @@ target_sources(main PRIVATE
         "authenticator.cpp"
         "secret_provider.cpp"
         "drop_server.cpp"
+        "connection_handler.cpp"
+        "config_parser.cpp"
+        "server_config.cpp"
+        "log.cpp"
+        "signal_guard.cpp"
 )

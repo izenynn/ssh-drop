@@ -1,6 +1,11 @@
 #include "drop_server.hpp"
 
+#include <string>
 #include <utility>
+
+#include "connection_handler.hpp"
+#include "log.hpp"
+#include "ssh_types.hpp"
 
 namespace drop {
 
@@ -13,105 +18,32 @@ DropServer::DropServer(ServerConfig config,
 {
 }
 
-void DropServer::run()
+void DropServer::run(std::atomic<bool>& running)
 {
-	// Reset transient state so run() is safe to call again
-	authenticated_ = false;
-	raw_channel_ = nullptr;
-	got_shell_ = false;
-
 	SshBind bind;
 	bind.set_port(config_.port);
 	bind.set_host_key(config_.host_key_path);
 	bind.listen();
 
-	SshSession session;
+	log::info("Listening on port " + config_.port);
 
-	// Set up server callbacks before key exchange
-	ssh_server_callbacks_struct server_cb = {};
-	server_cb.userdata = this;
-	server_cb.auth_pubkey_function = on_auth_pubkey;
-	server_cb.channel_open_request_session_function = on_channel_open;
-	ssh_callbacks_init(&server_cb);
+	while (running.load(std::memory_order_relaxed)) {
+		SshSession session;
 
-	session.set_server_callbacks(&server_cb);
-	session.set_auth_methods(authenticator_->supported_methods());
+		if (!bind.accept(session, 1000))
+			continue;
 
-	bind.accept(session);
-	session.handle_key_exchange();
+		log::info("Connection accepted");
 
-	// Poll until authenticated and channel opened
-	SshEvent event;
-	event.add_session(session);
-
-	while (!authenticated_ || raw_channel_ == nullptr) {
-		if (event.poll(100) == SSH_ERROR) {
-			if (raw_channel_) {
-				ssh_channel_free(raw_channel_);
-				raw_channel_ = nullptr;
-			}
-			throw SshError::from(session.get(), "Event poll failed during auth");
+		try {
+			ConnectionHandler handler{std::move(session), *authenticator_, *secret_provider_};
+			handler.run();
+		} catch (const std::exception& e) {
+			log::error(e.what());
 		}
 	}
 
-	// Wrap raw channel immediately to prevent leaks
-	SshChannel channel{raw_channel_};
-	raw_channel_ = nullptr;
-
-	// Set channel callbacks for shell request
-	ssh_channel_callbacks_struct channel_cb = {};
-	channel_cb.userdata = this;
-	channel_cb.channel_shell_request_function = on_shell_request;
-	ssh_callbacks_init(&channel_cb);
-
-	channel.set_callbacks(&channel_cb);
-
-	while (!got_shell_) {
-		if (event.poll(100) == SSH_ERROR)
-			throw SshError::from(session.get(), "Event poll failed waiting for shell");
-	}
-
-	// Deliver secret
-	std::string secret = secret_provider_->get_secret();
-	channel.write(secret);
-	channel.send_eof();
-}
-
-int DropServer::on_auth_pubkey(ssh_session /*session*/, const char* /*user*/,
-                               ssh_key_struct* pubkey, char signature_state,
-                               void* userdata)
-{
-	auto* self = static_cast<DropServer*>(userdata);
-
-	if (signature_state == SSH_PUBLICKEY_STATE_NONE) {
-		if (self->authenticator_->is_authorized(pubkey))
-			return SSH_AUTH_SUCCESS;
-		return SSH_AUTH_DENIED;
-	}
-
-	if (signature_state == SSH_PUBLICKEY_STATE_VALID) {
-		if (self->authenticator_->is_authorized(pubkey)) {
-			self->authenticated_ = true;
-			return SSH_AUTH_SUCCESS;
-		}
-	}
-
-	return SSH_AUTH_DENIED;
-}
-
-ssh_channel DropServer::on_channel_open(ssh_session session, void* userdata)
-{
-	auto* self = static_cast<DropServer*>(userdata);
-	self->raw_channel_ = ssh_channel_new(session);
-	return self->raw_channel_;
-}
-
-int DropServer::on_shell_request(ssh_session /*session*/,
-                                 ssh_channel /*channel*/, void* userdata)
-{
-	auto* self = static_cast<DropServer*>(userdata);
-	self->got_shell_ = true;
-	return 0;
+	log::info("Server shutting down");
 }
 
 } // namespace drop

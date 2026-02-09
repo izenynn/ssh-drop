@@ -2,6 +2,12 @@
 
 #include <utility>
 
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <sys/select.h>
+#endif
+
 namespace drop {
 
 // ─── SshSession ─────────────────────────────────────────────────────────────
@@ -107,6 +113,32 @@ void SshBind::accept(SshSession& session)
 {
 	if (ssh_bind_accept(bind_, session.get()) != SSH_OK)
 		throw SshError::from(bind_, "Error accepting");
+}
+
+bool SshBind::accept(SshSession& session, int timeout_ms)
+{
+	socket_t fd = ssh_bind_get_fd(bind_);
+	if (fd == SSH_INVALID_SOCKET)
+		throw SshError{"ssh_bind has no valid fd"};
+
+	fd_set read_fds;
+	FD_ZERO(&read_fds);
+	FD_SET(fd, &read_fds);
+
+	struct timeval tv;
+	tv.tv_sec = timeout_ms / 1000;
+	tv.tv_usec = (timeout_ms % 1000) * 1000;
+
+	int rc = select(static_cast<int>(fd) + 1, &read_fds, nullptr, nullptr, &tv);
+	if (rc < 0)
+		throw SshError{"select() failed on bind fd"};
+	if (rc == 0)
+		return false;
+
+	if (ssh_bind_accept(bind_, session.get()) != SSH_OK)
+		throw SshError::from(bind_, "Error accepting");
+
+	return true;
 }
 
 // ─── SshChannel ─────────────────────────────────────────────────────────────

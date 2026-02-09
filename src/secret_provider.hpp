@@ -1,9 +1,12 @@
 #pragma once
 
 #include <filesystem>
+#include <memory>
 #include <string>
 
 namespace drop {
+
+struct ServerConfig;
 
 class ISecretProvider {
 public:
@@ -41,5 +44,7 @@ public:
 private:
 	std::filesystem::path path_;
 };
+
+[[nodiscard]] std::unique_ptr<ISecretProvider> make_secret_provider(const ServerConfig& config);
 
 } // namespace drop

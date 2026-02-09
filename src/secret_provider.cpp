@@ -5,6 +5,8 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "server_config.hpp"
+
 namespace drop {
 
 // ─── StaticSecretProvider ───────────────────────────────────────────────────
@@ -50,6 +52,22 @@ std::string FileSecretProvider::get_secret() const
 	std::ostringstream ss;
 	ss << file.rdbuf();
 	return ss.str();
+}
+
+// ─── Factory ────────────────────────────────────────────────────────────────
+
+std::unique_ptr<ISecretProvider> make_secret_provider(const ServerConfig& config)
+{
+	if (!config.secret_value.empty())
+		return std::make_unique<StaticSecretProvider>(config.secret_value);
+	if (!config.secret_file_path.empty())
+		return std::make_unique<FileSecretProvider>(config.secret_file_path);
+	if (!config.secret_env_name.empty())
+		return std::make_unique<EnvSecretProvider>(config.secret_env_name);
+
+	throw std::runtime_error{
+		"No secret source configured "
+		"(set secret, secret_file, or secret_env)"};
 }
 
 } // namespace drop
