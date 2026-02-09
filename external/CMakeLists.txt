@@ -8,6 +8,7 @@ set(CMAKE_SKIP_INSTALL_RULES ON)
 # https://github.com/Mbed-TLS/mbedtls.git
 set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
+set(MBEDTLS_USER_CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls_user_config.h" CACHE FILEPATH "" FORCE)
 add_subdirectory(mbedtls EXCLUDE_FROM_ALL)
 
 # Pre-set mbedTLS variables so libssh's FindMbedTLS.cmake finds our embedded build
