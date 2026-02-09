@@ -17,6 +17,7 @@ NoNewPrivileges=yes
 PrivateTmp=yes
 
 ReadOnlyPaths=/etc/ssh-drop
+ReadWritePaths=/var/log/ssh-drop
 
 [Install]
 WantedBy=multi-user.target
