@@ -1,10 +1,10 @@
 #pragma once
 
-#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
 
+#include <libssh/callbacks.h>
 #include <libssh/server.h>
 
 #include "ssh_error.hpp"
@@ -16,14 +16,6 @@ namespace drop {
 using SshKeyPtr = std::unique_ptr<
 	ssh_key_struct,
 	decltype([](ssh_key k) { ssh_key_free(k); })>;
-
-// ─── MessageAction ──────────────────────────────────────────────────────────
-
-enum class MessageAction {
-	Done,     // handler accepted — break loop
-	Reject,   // reject — reply_default, continue
-	Continue, // handler already replied (e.g. pk_ok probe) — continue
-};
 
 // ─── SshSession ─────────────────────────────────────────────────────────────
 
@@ -37,8 +29,9 @@ public:
 	SshSession(const SshSession&) = delete;
 	SshSession& operator=(const SshSession&) = delete;
 
+	void set_server_callbacks(ssh_server_callbacks cb);
+	void set_auth_methods(int methods);
 	void handle_key_exchange();
-	void message_loop(std::function<MessageAction(ssh_message)> handler);
 
 	ssh_session get() const noexcept { return session_; }
 
@@ -81,6 +74,7 @@ public:
 	SshChannel(const SshChannel&) = delete;
 	SshChannel& operator=(const SshChannel&) = delete;
 
+	void set_callbacks(ssh_channel_callbacks cb);
 	void write(std::string_view data);
 	void send_eof();
 	void close();
@@ -89,6 +83,25 @@ public:
 
 private:
 	ssh_channel channel_ = nullptr;
+};
+
+// ─── SshEvent ───────────────────────────────────────────────────────────────
+
+class SshEvent {
+public:
+	SshEvent();
+	~SshEvent();
+
+	SshEvent(SshEvent&& other) noexcept;
+	SshEvent& operator=(SshEvent&& other) noexcept;
+	SshEvent(const SshEvent&) = delete;
+	SshEvent& operator=(const SshEvent&) = delete;
+
+	void add_session(SshSession& session);
+	int poll(int timeout_ms);
+
+private:
+	ssh_event event_ = nullptr;
 };
 
 } // namespace drop

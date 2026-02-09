@@ -38,30 +38,21 @@ SshSession& SshSession::operator=(SshSession&& other) noexcept
 	return *this;
 }
 
+void SshSession::set_server_callbacks(ssh_server_callbacks cb)
+{
+	if (ssh_set_server_callbacks(session_, cb) != SSH_OK)
+		throw SshError{"Failed to set server callbacks"};
+}
+
+void SshSession::set_auth_methods(int methods)
+{
+	ssh_set_auth_methods(session_, methods);
+}
+
 void SshSession::handle_key_exchange()
 {
 	if (ssh_handle_key_exchange(session_) != SSH_OK)
 		throw SshError::from(session_, "Key exchange failed");
-}
-
-void SshSession::message_loop(std::function<MessageAction(ssh_message)> handler)
-{
-	ssh_message msg;
-	while ((msg = ssh_message_get(session_)) != nullptr) {
-		MessageAction action = handler(msg);
-		switch (action) {
-		case MessageAction::Done:
-			ssh_message_free(msg);
-			return;
-		case MessageAction::Reject:
-			ssh_message_reply_default(msg);
-			ssh_message_free(msg);
-			break;
-		case MessageAction::Continue:
-			ssh_message_free(msg);
-			break;
-		}
-	}
 }
 
 // ─── SshBind ────────────────────────────────────────────────────────────────
@@ -150,6 +141,12 @@ SshChannel& SshChannel::operator=(SshChannel&& other) noexcept
 	return *this;
 }
 
+void SshChannel::set_callbacks(ssh_channel_callbacks cb)
+{
+	if (ssh_set_channel_callbacks(channel_, cb) != SSH_OK)
+		throw SshError{"Failed to set channel callbacks"};
+}
+
 void SshChannel::write(std::string_view data)
 {
 	ssh_channel_write(channel_, data.data(), static_cast<uint32_t>(data.size()));
@@ -163,6 +160,47 @@ void SshChannel::send_eof()
 void SshChannel::close()
 {
 	ssh_channel_close(channel_);
+}
+
+// ─── SshEvent ───────────────────────────────────────────────────────────────
+
+SshEvent::SshEvent()
+	: event_{ssh_event_new()}
+{
+	if (!event_)
+		throw SshError{"ssh_event_new failed"};
+}
+
+SshEvent::~SshEvent()
+{
+	if (event_)
+		ssh_event_free(event_);
+}
+
+SshEvent::SshEvent(SshEvent&& other) noexcept
+	: event_{std::exchange(other.event_, nullptr)}
+{
+}
+
+SshEvent& SshEvent::operator=(SshEvent&& other) noexcept
+{
+	if (this != &other) {
+		if (event_)
+			ssh_event_free(event_);
+		event_ = std::exchange(other.event_, nullptr);
+	}
+	return *this;
+}
+
+void SshEvent::add_session(SshSession& session)
+{
+	if (ssh_event_add_session(event_, session.get()) != SSH_OK)
+		throw SshError{"Failed to add session to event loop"};
+}
+
+int SshEvent::poll(int timeout_ms)
+{
+	return ssh_event_dopoll(event_, timeout_ms);
 }
 
 } // namespace drop
