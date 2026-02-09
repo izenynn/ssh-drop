@@ -1,8 +1,13 @@
 # SSH Drop
 
 Minimal SSH server that securely delivers a secret to authenticated clients.
+Connect, authenticate, receive your secret, done.
 
-> **Warning:** This software has not been independently tested, audited, or reviewed for security. Use it at your own risk and do not rely on it in security-critical environments.
+> [!NOTE]
+> Linux only. Designed for server environments.
+
+> [!WARNING]
+> This software has not been independently tested, audited, or reviewed for security. Use it at your own risk and do not rely on it in security-critical environments.
 
 ## Features
 
