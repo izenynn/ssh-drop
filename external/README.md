@@ -9,5 +9,5 @@
 ## libssh
 
 - Upstream: <https://git.libssh.org/projects/libssh.git/>
-- Version: 0.11.1 (0fa80859009d57cdbac2acb07189e8914fb53840, 2024)
+- Version: 0.11.3 (20bd4e62e5bc54de2e67a0c255c2e58f93318233, 2025)
 - License: GNU Lesser General Public License v2.1
