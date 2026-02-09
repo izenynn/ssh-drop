@@ -96,11 +96,6 @@ int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/,
 {
 	auto* self = static_cast<ConnectionHandler*>(userdata);
 
-	if (!self->authenticator_.check_user(user)) {
-		log::warn("Authentication denied (user mismatch)");
-		return SSH_AUTH_DENIED;
-	}
-
 	if (signature_state == SSH_PUBLICKEY_STATE_NONE) {
 		if (self->authenticator_.check_pubkey(pubkey))
 			return SSH_AUTH_SUCCESS;
@@ -109,15 +104,26 @@ int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/,
 	}
 
 	if (signature_state == SSH_PUBLICKEY_STATE_VALID) {
-		if (self->authenticator_.check_pubkey(pubkey)) {
-			if (self->requires_both_
-			    && !self->password_passed_) {
-				self->pubkey_passed_ = true;
-				return SSH_AUTH_PARTIAL;
-			}
-			self->authenticated_ = true;
-			return SSH_AUTH_SUCCESS;
+		if (!self->authenticator_.check_pubkey(pubkey)) {
+			log::warn("Authentication denied");
+			return SSH_AUTH_DENIED;
 		}
+
+		if (self->requires_both_
+		    && !self->password_passed_) {
+			self->pubkey_passed_ = true;
+			self->session_.set_auth_methods(
+					SSH_AUTH_METHOD_PASSWORD);
+			return SSH_AUTH_PARTIAL;
+		}
+
+		if (!self->authenticator_.check_user(user)) {
+			log::warn("Authentication denied");
+			return SSH_AUTH_DENIED;
+		}
+
+		self->authenticated_ = true;
+		return SSH_AUTH_SUCCESS;
 	}
 
 	log::warn("Authentication denied");
@@ -130,19 +136,21 @@ int ConnectionHandler::on_auth_password(ssh_session /*session*/,
 {
 	auto* self = static_cast<ConnectionHandler*>(userdata);
 
-	if (!self->authenticator_.check_user(user)) {
-		log::warn("Authentication denied (user mismatch)");
-		return SSH_AUTH_DENIED;
-	}
-
 	if (!self->authenticator_.check_password(password)) {
-		log::warn("Authentication denied (wrong password)");
+		log::warn("Authentication denied");
 		return SSH_AUTH_DENIED;
 	}
 
 	if (self->requires_both_ && !self->pubkey_passed_) {
 		self->password_passed_ = true;
+		self->session_.set_auth_methods(
+				SSH_AUTH_METHOD_PUBLICKEY);
 		return SSH_AUTH_PARTIAL;
+	}
+
+	if (!self->authenticator_.check_user(user)) {
+		log::warn("Authentication denied");
+		return SSH_AUTH_DENIED;
 	}
 
 	self->authenticated_ = true;
