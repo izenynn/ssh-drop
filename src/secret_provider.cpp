@@ -1,12 +1,12 @@
-#include "secret_provider.hpp"
+#include "secret_provider.h"
 
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 
-#include "crypto.hpp"
-#include "server_config.hpp"
+#include "crypto.h"
+#include "server_config.h"
 
 namespace drop {
 

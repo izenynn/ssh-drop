@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_AUTHENTICATOR_H_
+#define SSH_DROP_AUTHENTICATOR_H_
 
 #include <filesystem>
 #include <memory>
@@ -6,7 +7,7 @@
 
 #include <libssh/libssh.h>
 
-#include "secret_provider.hpp"
+#include "secret_provider.h"
 
 namespace drop {
 
@@ -56,3 +57,5 @@ private:
 make_authenticator(const ServerConfig& config);
 
 } // namespace drop
+
+#endif // SSH_DROP_AUTHENTICATOR_H_

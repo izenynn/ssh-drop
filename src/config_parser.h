@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_CONFIG_PARSER_H_
+#define SSH_DROP_CONFIG_PARSER_H_
 
 #include <filesystem>
 #include <string>
@@ -13,3 +14,5 @@ public:
 };
 
 } // namespace drop
+
+#endif // SSH_DROP_CONFIG_PARSER_H_

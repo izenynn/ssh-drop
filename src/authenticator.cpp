@@ -1,4 +1,4 @@
-#include "authenticator.hpp"
+#include "authenticator.h"
 
 #include <cctype>
 #include <fstream>
@@ -6,8 +6,8 @@
 #include <stdexcept>
 #include <string>
 
-#include "server_config.hpp"
-#include "ssh_types.hpp"
+#include "server_config.h"
+#include "ssh_types.h"
 
 namespace drop {
 

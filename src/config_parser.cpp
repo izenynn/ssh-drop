@@ -1,4 +1,4 @@
-#include "config_parser.hpp"
+#include "config_parser.h"
 
 #include <fstream>
 #include <stdexcept>

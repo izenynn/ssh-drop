@@ -1,11 +1,11 @@
-#include "drop_server.hpp"
+#include "drop_server.h"
 
 #include <string>
 #include <utility>
 
-#include "connection_handler.hpp"
-#include "log.hpp"
-#include "ssh_types.hpp"
+#include "connection_handler.h"
+#include "log.h"
+#include "ssh_types.h"
 
 namespace drop {
 

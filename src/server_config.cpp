@@ -1,4 +1,4 @@
-#include "server_config.hpp"
+#include "server_config.h"
 
 #include <algorithm>
 #include <cctype>
@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <stdexcept>
 
-#include "config_parser.hpp"
+#include "config_parser.h"
 
 namespace drop {
 

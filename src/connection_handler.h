@@ -1,10 +1,11 @@
-#pragma once
+#ifndef SSH_DROP_CONNECTION_HANDLER_H_
+#define SSH_DROP_CONNECTION_HANDLER_H_
 
 #include <libssh/libssh.h>
 
-#include "authenticator.hpp"
-#include "secret_provider.hpp"
-#include "ssh_types.hpp"
+#include "authenticator.h"
+#include "secret_provider.h"
+#include "ssh_types.h"
 
 namespace drop {
 
@@ -47,3 +48,5 @@ private:
 };
 
 } // namespace drop
+
+#endif // SSH_DROP_CONNECTION_HANDLER_H_

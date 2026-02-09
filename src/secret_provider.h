@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_SECRET_PROVIDER_H_
+#define SSH_DROP_SECRET_PROVIDER_H_
 
 #include <filesystem>
 #include <memory>
@@ -81,3 +82,5 @@ make_value_provider(const std::optional<std::string>& value,
 make_secret_provider(const ServerConfig& config);
 
 } // namespace drop
+
+#endif // SSH_DROP_SECRET_PROVIDER_H_

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_SERVER_CONFIG_H_
+#define SSH_DROP_SERVER_CONFIG_H_
 
 #include <optional>
 #include <string>
@@ -39,3 +40,5 @@ struct ServerConfig {
 };
 
 } // namespace drop
+
+#endif // SSH_DROP_SERVER_CONFIG_H_

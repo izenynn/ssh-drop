@@ -1,13 +1,14 @@
-#pragma once
+#ifndef SSH_DROP_DROP_SERVER_H_
+#define SSH_DROP_DROP_SERVER_H_
 
 #include <atomic>
 #include <memory>
 #include <thread>
 #include <vector>
 
-#include "authenticator.hpp"
-#include "secret_provider.hpp"
-#include "server_config.hpp"
+#include "authenticator.h"
+#include "secret_provider.h"
+#include "server_config.h"
 
 namespace drop {
 
@@ -31,3 +32,5 @@ private:
 };
 
 } // namespace drop
+
+#endif // SSH_DROP_DROP_SERVER_H_

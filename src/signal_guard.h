@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_SIGNAL_GUARD_H_
+#define SSH_DROP_SIGNAL_GUARD_H_
 
 #include <atomic>
 
@@ -16,3 +17,5 @@ public:
 };
 
 } // namespace drop
+
+#endif // SSH_DROP_SIGNAL_GUARD_H_

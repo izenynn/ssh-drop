@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_SSH_TYPES_H_
+#define SSH_DROP_SSH_TYPES_H_
 
 #include <memory>
 #include <string>
@@ -7,7 +8,7 @@
 #include <libssh/callbacks.h>
 #include <libssh/server.h>
 
-#include "ssh_error.hpp"
+#include "ssh_error.h"
 
 namespace drop {
 
@@ -106,3 +107,5 @@ private:
 };
 
 } // namespace drop
+
+#endif // SSH_DROP_SSH_TYPES_H_

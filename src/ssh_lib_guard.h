@@ -1,8 +1,9 @@
-#pragma once
+#ifndef SSH_DROP_SSH_LIB_GUARD_H_
+#define SSH_DROP_SSH_LIB_GUARD_H_
 
 #include <libssh/libssh.h>
 
-#include "ssh_error.hpp"
+#include "ssh_error.h"
 
 namespace drop {
 
@@ -26,3 +27,5 @@ public:
 };
 
 } // namespace drop
+
+#endif // SSH_DROP_SSH_LIB_GUARD_H_

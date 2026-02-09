@@ -1,10 +1,10 @@
-#include "encrypt_command.hpp"
+#include "encrypt_command.h"
 
 #include <fstream>
 #include <iostream>
 #include <string>
 
-#include "crypto.hpp"
+#include "crypto.h"
 
 #ifdef _WIN32
 #include <conio.h>

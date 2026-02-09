@@ -1,4 +1,4 @@
-#include "signal_guard.hpp"
+#include "signal_guard.h"
 
 #ifdef _WIN32
 #include <windows.h>

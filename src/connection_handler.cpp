@@ -1,10 +1,10 @@
-#include "connection_handler.hpp"
+#include "connection_handler.h"
 
 #include <chrono>
 #include <string>
 #include <utility>
 
-#include "log.hpp"
+#include "log.h"
 
 namespace drop {
 

@@ -1,4 +1,4 @@
-#include "ssh_types.hpp"
+#include "ssh_types.h"
 
 #include <utility>
 

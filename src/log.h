@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_LOG_H_
+#define SSH_DROP_LOG_H_
 
 #include <string>
 #include <string_view>
@@ -20,3 +21,5 @@ void  error(std::string_view msg);
 Level level_from_string(std::string_view str);
 
 } // namespace drop::log
+
+#endif // SSH_DROP_LOG_H_

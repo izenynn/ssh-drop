@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_CRYPTO_H_
+#define SSH_DROP_CRYPTO_H_
 
 #include <optional>
 #include <string>
@@ -20,3 +21,5 @@ constexpr int kHeaderLen   = kSaltLen + kNonceLen + kTagLen;
 						  std::string_view passphrase);
 
 } // namespace drop::crypto
+
+#endif // SSH_DROP_CRYPTO_H_

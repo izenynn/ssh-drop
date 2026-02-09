@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SSH_DROP_SSH_ERROR_H_
+#define SSH_DROP_SSH_ERROR_H_
 
 #include <stdexcept>
 #include <string>
@@ -19,3 +20,5 @@ public:
 };
 
 } // namespace drop
+
+#endif // SSH_DROP_SSH_ERROR_H_

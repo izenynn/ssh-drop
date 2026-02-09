@@ -4,15 +4,15 @@
 #include <memory>
 #include <string>
 
-#include "authenticator.hpp"
-#include "drop_server.hpp"
-#include "encrypt_command.hpp"
-#include "log.hpp"
-#include "secret_provider.hpp"
-#include "server_config.hpp"
-#include "signal_guard.hpp"
-#include "ssh_error.hpp"
-#include "ssh_lib_guard.hpp"
+#include "authenticator.h"
+#include "drop_server.h"
+#include "encrypt_command.h"
+#include "log.h"
+#include "secret_provider.h"
+#include "server_config.h"
+#include "signal_guard.h"
+#include "ssh_error.h"
+#include "ssh_lib_guard.h"
 
 int main(int argc, char* argv[])
 {
