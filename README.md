@@ -111,7 +111,7 @@ Set `auth_method = password` and provide exactly one password source:
 
 #### Both mode (multi-factor)
 
-Set `auth_method = both` to require **both** a valid public key **and** a correct password. The client must complete both authentication steps (in any order) via SSH partial authentication.
+Set `auth_method = both` to require **both** a valid public key **and** a correct password. The server enforces a strict pubkey-first order: only the public key method is advertised initially. The password prompt is only revealed after the key is verified via SSH partial authentication. This prevents attackers from brute-forcing passwords without a valid key.
 
 #### Username check (optional, any mode)
 
