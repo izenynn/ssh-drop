@@ -24,8 +24,10 @@ BOOL WINAPI console_handler(DWORD event)
 	return FALSE;
 }
 #else
-void signal_handler(int /*sig*/)
+void signal_handler(int sig)
 {
+	(void)sig;
+
 	if (g_running)
 		g_running->store(false, std::memory_order_relaxed);
 }

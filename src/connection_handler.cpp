@@ -103,10 +103,12 @@ void ConnectionHandler::run()
 	log::info("Secret delivered");
 }
 
-int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/, const char* user,
+int ConnectionHandler::on_auth_pubkey(ssh_session session, const char* user,
 				      ssh_key_struct* pubkey,
 				      char signature_state, void* userdata)
 {
+	(void)session;
+
 	auto* self = static_cast<ConnectionHandler*>(userdata);
 
 	if (signature_state == SSH_PUBLICKEY_STATE_NONE) {
@@ -142,10 +144,11 @@ int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/, const char* user,
 	return SSH_AUTH_DENIED;
 }
 
-int ConnectionHandler::on_auth_password(ssh_session /*session*/,
-					const char* user, const char* password,
-					void* userdata)
+int ConnectionHandler::on_auth_password(ssh_session session, const char* user,
+					const char* password, void* userdata)
 {
+	(void)session;
+
 	auto* self = static_cast<ConnectionHandler*>(userdata);
 
 	if (self->requires_both_ && !self->pubkey_passed_) {
@@ -175,22 +178,32 @@ ssh_channel ConnectionHandler::on_channel_open(ssh_session session,
 	return self->raw_channel_;
 }
 
-int ConnectionHandler::on_shell_request(ssh_session /*session*/,
-					ssh_channel /*channel*/, void* userdata)
+int ConnectionHandler::on_shell_request(ssh_session session,
+					ssh_channel channel, void* userdata)
 {
+	(void)session;
+	(void)channel;
+
 	auto* self	 = static_cast<ConnectionHandler*>(userdata);
 	self->got_shell_ = true;
 	return 0;
 }
 
-int ConnectionHandler::on_pty_request(ssh_session /*session*/,
-				      ssh_channel /*channel*/,
-				      const char* /*term*/, int /*cols*/,
-				      int /*rows*/, int /*py*/, int /*px*/,
-				      void* /*userdata*/)
+int ConnectionHandler::on_pty_request(ssh_session session, ssh_channel channel,
+				      const char* term, int cols, int rows,
+				      int py, int px, void* userdata)
 {
-	// Accept, puts client in raw mode (no local echo),
-	// which hides passphrase input
+	(void)session;
+	(void)channel;
+	(void)term;
+	(void)cols;
+	(void)rows;
+	(void)py;
+	(void)px;
+	(void)userdata;
+
+	// Accept — puts client in raw mode (no local echo),
+	// which hides passphrase input.
 	return 0;
 }
 

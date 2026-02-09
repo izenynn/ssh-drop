@@ -15,8 +15,10 @@ StaticSecretProvider::StaticSecretProvider(std::string secret)
 {
 }
 
-std::string StaticSecretProvider::get_secret(std::string_view /*passphrase*/) const
+std::string StaticSecretProvider::get_secret(std::string_view passphrase) const
 {
+	(void)passphrase;
+
 	return secret_;
 }
 
@@ -25,8 +27,10 @@ EnvSecretProvider::EnvSecretProvider(std::string var_name)
 {
 }
 
-std::string EnvSecretProvider::get_secret(std::string_view /*passphrase*/) const
+std::string EnvSecretProvider::get_secret(std::string_view passphrase) const
 {
+	(void)passphrase;
+
 	const char* val = std::getenv(var_name_.c_str());
 	if (!val)
 		throw std::runtime_error{"Environment variable not set: "
@@ -39,8 +43,10 @@ FileSecretProvider::FileSecretProvider(std::filesystem::path path)
 {
 }
 
-std::string FileSecretProvider::get_secret(std::string_view /*passphrase*/) const
+std::string FileSecretProvider::get_secret(std::string_view passphrase) const
 {
+	(void)passphrase;
+
 	std::ifstream file(path_);
 	if (!file.is_open())
 		throw std::runtime_error{"Could not open secret file: "
@@ -61,9 +67,10 @@ std::string
 EncryptedSecretProvider::get_secret(std::string_view passphrase) const
 {
 	std::string data_b64 = inner_->get_secret();
-	auto result = crypto::decrypt(data_b64, passphrase);
+	auto	    result   = crypto::decrypt(data_b64, passphrase);
 	if (!result)
-		throw std::runtime_error{"Decryption failed (wrong passphrase)"};
+		throw std::runtime_error{
+				"Decryption failed (wrong passphrase)"};
 	return std::move(*result);
 }
 
