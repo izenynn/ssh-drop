@@ -21,8 +21,8 @@ ConnectionHandler::ConnectionHandler(SshSession		    session,
 
 void ConnectionHandler::run()
 {
-	int supported  = authenticator_.supported_methods();
-	requires_both_ = supported
+	const int supported = authenticator_.supported_methods();
+	requires_both_	    = supported
 			 == (SSH_AUTH_METHOD_PUBLICKEY
 			     | SSH_AUTH_METHOD_PASSWORD);
 
@@ -189,8 +189,8 @@ int ConnectionHandler::on_pty_request(ssh_session /*session*/,
 				      int /*rows*/, int /*py*/, int /*px*/,
 				      void* /*userdata*/)
 {
-	// Accept — puts client in raw mode (no local echo),
-	// which hides passphrase input.
+	// Accept, puts client in raw mode (no local echo),
+	// which hides passphrase input
 	return 0;
 }
 
