@@ -1,23 +1,34 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 
 namespace drop {
 
 struct ServerConfig {
-	std::string port		 = "7022";
-	std::string host_key_path	 = "key/id_ed25519";
-	std::string authorized_keys_path = "key/authorized_keys";
+	std::string port;
+	std::string host_key_path;
+	std::string authorized_keys_path;
 
 	int auth_timeout = 30;
 
 	std::string log_level = "info";
 	std::string log_file;
 
-	std::string secret_value;
-	std::string secret_file_path = "secret/secret";
-	std::string secret_env_name;
+	std::optional<std::string> secret;
+	std::optional<std::string> secret_file;
+	std::optional<std::string> secret_env;
+
+	std::string auth_method;
+
+	std::optional<std::string> auth_user;
+	std::optional<std::string> auth_user_file;
+	std::optional<std::string> auth_user_env;
+
+	std::optional<std::string> auth_password;
+	std::optional<std::string> auth_password_file;
+	std::optional<std::string> auth_password_env;
 
 	static ServerConfig load(int argc, char* argv[]);
 	void		    validate() const;

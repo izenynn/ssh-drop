@@ -111,7 +111,7 @@ endif ()
 set_target_properties(main PROPERTIES OUTPUT_NAME ${CMAKE_PROJECT_NAME})
 
 # Copy runtime directories
-foreach (dir key secret)
+foreach (dir config key secret)
     add_custom_command(TARGET main POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/${dir}

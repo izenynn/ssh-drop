@@ -25,8 +25,7 @@ int main(int argc, char* argv[])
 		std::atomic<bool> running{true};
 		drop::SignalGuard signals{running};
 
-		auto auth = std::make_unique<drop::AuthorizedKeysAuthenticator>(
-				config.authorized_keys_path);
+		auto auth   = drop::make_authenticator(config);
 		auto secret = drop::make_secret_provider(config);
 
 		drop::DropServer server{std::move(config), std::move(auth),

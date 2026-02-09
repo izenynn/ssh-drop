@@ -8,5 +8,15 @@ ExecStart=/usr/local/bin/ssh-drop /etc/ssh-drop/ssh-drop.conf
 Restart=on-failure
 RestartSec=5
 
+User=ssh-drop
+Group=ssh-drop
+
+ProtectSystem=strict
+ProtectHome=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+ReadOnlyPaths=/etc/ssh-drop
+
 [Install]
 WantedBy=multi-user.target

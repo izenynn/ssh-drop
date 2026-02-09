@@ -21,14 +21,24 @@ ConnectionHandler::ConnectionHandler(SshSession		    session,
 
 void ConnectionHandler::run()
 {
+	int methods = authenticator_.supported_methods();
+	requires_both_ =
+			(methods & SSH_AUTH_METHOD_PUBLICKEY) != 0
+			&& (methods & SSH_AUTH_METHOD_PASSWORD) != 0;
+
 	ssh_server_callbacks_struct server_cb		= {};
 	server_cb.userdata				= this;
-	server_cb.auth_pubkey_function			= on_auth_pubkey;
 	server_cb.channel_open_request_session_function = on_channel_open;
+
+	if (methods & SSH_AUTH_METHOD_PUBLICKEY)
+		server_cb.auth_pubkey_function = on_auth_pubkey;
+	if (methods & SSH_AUTH_METHOD_PASSWORD)
+		server_cb.auth_password_function = on_auth_password;
+
 	ssh_callbacks_init(&server_cb);
 
 	session_.set_server_callbacks(&server_cb);
-	session_.set_auth_methods(authenticator_.supported_methods());
+	session_.set_auth_methods(methods);
 
 	session_.handle_key_exchange();
 
@@ -80,21 +90,31 @@ void ConnectionHandler::run()
 }
 
 int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/,
-				      const char* /*user*/,
+				      const char*    user,
 				      ssh_key_struct* pubkey,
 				      char signature_state, void* userdata)
 {
 	auto* self = static_cast<ConnectionHandler*>(userdata);
 
+	if (!self->authenticator_.check_user(user)) {
+		log::warn("Authentication denied (user mismatch)");
+		return SSH_AUTH_DENIED;
+	}
+
 	if (signature_state == SSH_PUBLICKEY_STATE_NONE) {
-		if (self->authenticator_.is_authorized(pubkey))
+		if (self->authenticator_.check_pubkey(pubkey))
 			return SSH_AUTH_SUCCESS;
 		log::debug("Public key not authorized (probe)");
 		return SSH_AUTH_DENIED;
 	}
 
 	if (signature_state == SSH_PUBLICKEY_STATE_VALID) {
-		if (self->authenticator_.is_authorized(pubkey)) {
+		if (self->authenticator_.check_pubkey(pubkey)) {
+			if (self->requires_both_
+			    && !self->password_passed_) {
+				self->pubkey_passed_ = true;
+				return SSH_AUTH_PARTIAL;
+			}
 			self->authenticated_ = true;
 			return SSH_AUTH_SUCCESS;
 		}
@@ -102,6 +122,31 @@ int ConnectionHandler::on_auth_pubkey(ssh_session /*session*/,
 
 	log::warn("Authentication denied");
 	return SSH_AUTH_DENIED;
+}
+
+int ConnectionHandler::on_auth_password(ssh_session /*session*/,
+					const char* user,
+					const char* password, void* userdata)
+{
+	auto* self = static_cast<ConnectionHandler*>(userdata);
+
+	if (!self->authenticator_.check_user(user)) {
+		log::warn("Authentication denied (user mismatch)");
+		return SSH_AUTH_DENIED;
+	}
+
+	if (!self->authenticator_.check_password(password)) {
+		log::warn("Authentication denied (wrong password)");
+		return SSH_AUTH_DENIED;
+	}
+
+	if (self->requires_both_ && !self->pubkey_passed_) {
+		self->password_passed_ = true;
+		return SSH_AUTH_PARTIAL;
+	}
+
+	self->authenticated_ = true;
+	return SSH_AUTH_SUCCESS;
 }
 
 ssh_channel ConnectionHandler::on_channel_open(ssh_session session,

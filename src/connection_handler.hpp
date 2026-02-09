@@ -21,6 +21,10 @@ private:
 	static int	   on_auth_pubkey(ssh_session session, const char* user,
 					  ssh_key_struct* pubkey, char signature_state,
 					  void* userdata);
+	static int	   on_auth_password(ssh_session session,
+					    const char* user,
+					    const char* password,
+					    void*	userdata);
 	static ssh_channel on_channel_open(ssh_session session, void* userdata);
 	static int on_shell_request(ssh_session session, ssh_channel channel,
 				    void* userdata);
@@ -34,6 +38,10 @@ private:
 	ssh_channel raw_channel_   = nullptr;
 	bool	    authenticated_ = false;
 	bool	    got_shell_	   = false;
+
+	bool pubkey_passed_   = false;
+	bool password_passed_ = false;
+	bool requires_both_   = false;
 };
 
 } // namespace drop

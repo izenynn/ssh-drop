@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace drop {
@@ -44,6 +45,11 @@ public:
 private:
 	std::filesystem::path path_;
 };
+
+[[nodiscard]] std::unique_ptr<ISecretProvider>
+make_value_provider(const std::optional<std::string>& value,
+		    const std::optional<std::string>& file_path,
+		    const std::optional<std::string>& env_name);
 
 [[nodiscard]] std::unique_ptr<ISecretProvider>
 make_secret_provider(const ServerConfig& config);

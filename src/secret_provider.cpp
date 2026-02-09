@@ -51,20 +51,29 @@ std::string FileSecretProvider::get_secret() const
 }
 
 std::unique_ptr<ISecretProvider>
+make_value_provider(const std::optional<std::string>& value,
+		    const std::optional<std::string>& file_path,
+		    const std::optional<std::string>& env_name)
+{
+	if (value.has_value())
+		return std::make_unique<StaticSecretProvider>(*value);
+	if (file_path.has_value())
+		return std::make_unique<FileSecretProvider>(*file_path);
+	if (env_name.has_value())
+		return std::make_unique<EnvSecretProvider>(*env_name);
+	return nullptr;
+}
+
+std::unique_ptr<ISecretProvider>
 make_secret_provider(const ServerConfig& config)
 {
-	if (!config.secret_value.empty())
-		return std::make_unique<StaticSecretProvider>(
-				config.secret_value);
-	if (!config.secret_file_path.empty())
-		return std::make_unique<FileSecretProvider>(
-				config.secret_file_path);
-	if (!config.secret_env_name.empty())
-		return std::make_unique<EnvSecretProvider>(
-				config.secret_env_name);
-
-	throw std::runtime_error{"No secret source configured "
-				 "(set secret, secret_file, or secret_env)"};
+	auto p = make_value_provider(config.secret, config.secret_file,
+				     config.secret_env);
+	if (!p)
+		throw std::runtime_error{
+				"No secret source configured "
+				"(set secret, secret_file, or secret_env)"};
+	return p;
 }
 
 } // namespace drop
