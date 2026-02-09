@@ -15,6 +15,11 @@ DropServer::DropServer(ServerConfig config,
 
 void DropServer::run()
 {
+	// Reset transient state so run() is safe to call again
+	authenticated_ = false;
+	raw_channel_ = nullptr;
+	got_shell_ = false;
+
 	SshBind bind;
 	bind.set_port(config_.port);
 	bind.set_host_key(config_.host_key_path);
@@ -40,9 +45,18 @@ void DropServer::run()
 	event.add_session(session);
 
 	while (!authenticated_ || raw_channel_ == nullptr) {
-		if (event.poll(100) == SSH_ERROR)
+		if (event.poll(100) == SSH_ERROR) {
+			if (raw_channel_) {
+				ssh_channel_free(raw_channel_);
+				raw_channel_ = nullptr;
+			}
 			throw SshError::from(session.get(), "Event poll failed during auth");
+		}
 	}
+
+	// Wrap raw channel immediately to prevent leaks
+	SshChannel channel{raw_channel_};
+	raw_channel_ = nullptr;
 
 	// Set channel callbacks for shell request
 	ssh_channel_callbacks_struct channel_cb = {};
@@ -50,8 +64,6 @@ void DropServer::run()
 	channel_cb.channel_shell_request_function = on_shell_request;
 	ssh_callbacks_init(&channel_cb);
 
-	SshChannel channel{raw_channel_};
-	raw_channel_ = nullptr;
 	channel.set_callbacks(&channel_cb);
 
 	while (!got_shell_) {

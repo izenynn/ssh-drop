@@ -87,12 +87,14 @@ SshBind& SshBind::operator=(SshBind&& other) noexcept
 
 void SshBind::set_port(const std::string& port)
 {
-	ssh_bind_options_set(bind_, SSH_BIND_OPTIONS_BINDPORT_STR, port.c_str());
+	if (ssh_bind_options_set(bind_, SSH_BIND_OPTIONS_BINDPORT_STR, port.c_str()) != SSH_OK)
+		throw SshError::from(bind_, "Failed to set bind port");
 }
 
 void SshBind::set_host_key(const std::string& path)
 {
-	ssh_bind_options_set(bind_, SSH_BIND_OPTIONS_HOSTKEY, path.c_str());
+	if (ssh_bind_options_set(bind_, SSH_BIND_OPTIONS_HOSTKEY, path.c_str()) != SSH_OK)
+		throw SshError::from(bind_, "Failed to set host key");
 }
 
 void SshBind::listen()
