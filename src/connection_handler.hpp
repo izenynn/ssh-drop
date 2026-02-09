@@ -12,7 +12,8 @@ class ConnectionHandler {
 public:
 	ConnectionHandler(SshSession		 session,
 			  const IAuthenticator&	 authenticator,
-			  const ISecretProvider& secret_provider);
+			  const ISecretProvider& secret_provider,
+			  int			 auth_timeout);
 
 	void run();
 
@@ -27,6 +28,8 @@ private:
 	SshSession	       session_;
 	const IAuthenticator&  authenticator_;
 	const ISecretProvider& secret_provider_;
+
+	int auth_timeout_;
 
 	ssh_channel raw_channel_   = nullptr;
 	bool	    authenticated_ = false;

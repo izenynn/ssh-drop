@@ -10,6 +10,8 @@ struct ServerConfig {
 	std::string host_key_path	 = "key/id_ed25519";
 	std::string authorized_keys_path = "key/authorized_keys";
 
+	int auth_timeout = 30;
+
 	std::string log_level = "info";
 	std::string log_file;
 

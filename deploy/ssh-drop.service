@@ -1,0 +1,12 @@
+[Unit]
+Description=ssh-drop secret delivery server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ssh-drop /etc/ssh-drop/ssh-drop.conf
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

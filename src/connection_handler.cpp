@@ -1,5 +1,6 @@
 #include "connection_handler.hpp"
 
+#include <chrono>
 #include <string>
 #include <utility>
 
@@ -9,10 +10,12 @@ namespace drop {
 
 ConnectionHandler::ConnectionHandler(SshSession		    session,
 				     const IAuthenticator&  authenticator,
-				     const ISecretProvider& secret_provider)
+				     const ISecretProvider& secret_provider,
+				     int		    auth_timeout)
     : session_{std::move(session)},
       authenticator_{authenticator},
-      secret_provider_{secret_provider}
+      secret_provider_{secret_provider},
+      auth_timeout_{auth_timeout}
 {
 }
 
@@ -32,7 +35,12 @@ void ConnectionHandler::run()
 	SshEvent event;
 	event.add_session(session_);
 
+	const auto deadline = std::chrono::steady_clock::now()
+			      + std::chrono::seconds(auth_timeout_);
+
 	while (!authenticated_ || raw_channel_ == nullptr) {
+		if (std::chrono::steady_clock::now() >= deadline)
+			throw SshError{"Authentication timed out"};
 		if (event.poll(100) == SSH_ERROR) {
 			if (raw_channel_) {
 				ssh_channel_free(raw_channel_);
@@ -56,6 +64,8 @@ void ConnectionHandler::run()
 	channel.set_callbacks(&channel_cb);
 
 	while (!got_shell_) {
+		if (std::chrono::steady_clock::now() >= deadline)
+			throw SshError{"Authentication timed out"};
 		if (event.poll(100) == SSH_ERROR)
 			throw SshError::from(
 					session_.get(),
