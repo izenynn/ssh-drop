@@ -28,6 +28,9 @@ private:
 	static ssh_channel on_channel_open(ssh_session session, void* userdata);
 	static int on_shell_request(ssh_session session, ssh_channel channel,
 				    void* userdata);
+	static int on_pty_request(ssh_session session, ssh_channel channel,
+				  const char* term, int cols, int rows,
+				  int py, int px, void* userdata);
 
 	SshSession	       session_;
 	const IAuthenticator&  authenticator_;

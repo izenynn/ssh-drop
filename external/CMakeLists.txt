@@ -34,4 +34,4 @@ add_subdirectory(libssh EXCLUDE_FROM_ALL)
 # Restore install rules for the main project
 set(CMAKE_SKIP_INSTALL_RULES OFF)
 
-target_link_libraries(main ssh Threads::Threads)
+target_link_libraries(main ssh mbedcrypto Threads::Threads)

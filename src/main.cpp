@@ -1,9 +1,12 @@
 #include <atomic>
+#include <cstring>
+#include <iostream>
 #include <memory>
 #include <string>
 
 #include "authenticator.hpp"
 #include "drop_server.hpp"
+#include "encrypt_command.hpp"
 #include "log.hpp"
 #include "secret_provider.hpp"
 #include "server_config.hpp"
@@ -13,6 +16,11 @@
 
 int main(int argc, char* argv[])
 {
+	if (argc >= 3 && std::strcmp(argv[1], "--encrypt") == 0)
+		return drop::run_encrypt(argv[2]);
+	if (argc >= 3 && std::strcmp(argv[1], "--decrypt") == 0)
+		return drop::run_decrypt(argv[2]);
+
 	try {
 		auto config = drop::ServerConfig::load(argc, argv);
 		config.validate();

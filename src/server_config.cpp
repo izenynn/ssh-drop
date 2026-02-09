@@ -1,5 +1,7 @@
 #include "server_config.hpp"
 
+#include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <filesystem>
 #include <stdexcept>
@@ -7,6 +9,27 @@
 #include "config_parser.hpp"
 
 namespace drop {
+
+namespace {
+
+bool parse_bool(const std::string& key, const std::string& value)
+{
+	std::string lower = value;
+	std::transform(lower.begin(), lower.end(), lower.begin(),
+		       [](unsigned char c) {
+			       return std::tolower(c);
+		       });
+
+	if (lower == "true" || lower == "yes" || lower == "1")
+		return true;
+	if (lower == "false" || lower == "no" || lower == "0")
+		return false;
+
+	throw std::runtime_error{"Invalid boolean value for " + key + ": "
+				 + value};
+}
+
+} // namespace
 
 ServerConfig ServerConfig::load(int argc, char* argv[])
 {
@@ -67,11 +90,12 @@ void ServerConfig::validate() const
 				 + (secret_env.has_value() ? 1 : 0);
 	if (secret_count > 1)
 		throw std::runtime_error{
-				"Specify exactly one of secret, secret_file, secret_env"};
+				"Specify exactly one of secret, secret_file, "
+				"secret_env"};
 	if (secret_count == 0)
 		throw std::runtime_error{
-				"No secret source configured "
-				"(set secret, secret_file, or secret_env)"};
+				"No secret source configured (set secret, "
+				"secret_file, or secret_env)"};
 
 	if (secret_file.has_value()
 	    && !std::filesystem::exists(*secret_file))
@@ -154,6 +178,8 @@ ServerConfig::from_map(const std::unordered_map<std::string, std::string>& m)
 		cfg.secret_file = *v;
 	if (auto* v = get("secret_env"))
 		cfg.secret_env = *v;
+	if (auto* v = get("secret_encrypted"))
+		cfg.secret_encrypted = parse_bool("secret_encrypted", *v);
 
 	if (auto* v = get("auth_method"))
 		cfg.auth_method = *v;

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "crypto.hpp"
 #include "server_config.hpp"
 
 namespace drop {
@@ -14,7 +15,7 @@ StaticSecretProvider::StaticSecretProvider(std::string secret)
 {
 }
 
-std::string StaticSecretProvider::get_secret() const
+std::string StaticSecretProvider::get_secret(std::string_view /*passphrase*/) const
 {
 	return secret_;
 }
@@ -24,7 +25,7 @@ EnvSecretProvider::EnvSecretProvider(std::string var_name)
 {
 }
 
-std::string EnvSecretProvider::get_secret() const
+std::string EnvSecretProvider::get_secret(std::string_view /*passphrase*/) const
 {
 	const char* val = std::getenv(var_name_.c_str());
 	if (!val)
@@ -38,7 +39,7 @@ FileSecretProvider::FileSecretProvider(std::filesystem::path path)
 {
 }
 
-std::string FileSecretProvider::get_secret() const
+std::string FileSecretProvider::get_secret(std::string_view /*passphrase*/) const
 {
 	std::ifstream file(path_);
 	if (!file.is_open())
@@ -48,6 +49,22 @@ std::string FileSecretProvider::get_secret() const
 	std::ostringstream ss;
 	ss << file.rdbuf();
 	return ss.str();
+}
+
+EncryptedSecretProvider::EncryptedSecretProvider(
+		std::unique_ptr<ISecretProvider> inner)
+    : inner_{std::move(inner)}
+{
+}
+
+std::string
+EncryptedSecretProvider::get_secret(std::string_view passphrase) const
+{
+	std::string data_b64 = inner_->get_secret();
+	auto result = crypto::decrypt(data_b64, passphrase);
+	if (!result)
+		throw std::runtime_error{"Decryption failed (wrong passphrase)"};
+	return std::move(*result);
 }
 
 std::unique_ptr<ISecretProvider>
@@ -71,8 +88,12 @@ make_secret_provider(const ServerConfig& config)
 				     config.secret_env);
 	if (!p)
 		throw std::runtime_error{
-				"No secret source configured "
-				"(set secret, secret_file, or secret_env)"};
+				"No secret source configured (set secret, "
+				"secret_file, or secret_env)"};
+
+	if (config.secret_encrypted)
+		p = std::make_unique<EncryptedSecretProvider>(std::move(p));
+
 	return p;
 }
 

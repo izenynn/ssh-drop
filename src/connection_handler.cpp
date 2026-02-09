@@ -73,6 +73,7 @@ void ConnectionHandler::run()
 	ssh_channel_callbacks_struct channel_cb	  = {};
 	channel_cb.userdata			  = this;
 	channel_cb.channel_shell_request_function = on_shell_request;
+	channel_cb.channel_pty_request_function	  = on_pty_request;
 	ssh_callbacks_init(&channel_cb);
 
 	channel.set_callbacks(&channel_cb);
@@ -86,7 +87,16 @@ void ConnectionHandler::run()
 					"Event poll failed waiting for shell");
 	}
 
-	std::string secret = secret_provider_.get_secret();
+	std::string passphrase;
+	if (secret_provider_.needs_passphrase()) {
+		passphrase = channel.read(auth_timeout_ * 1000);
+		if (passphrase.empty()) {
+			log::warn("No passphrase received");
+			return;
+		}
+	}
+
+	std::string secret = secret_provider_.get_secret(passphrase);
 	channel.write(secret);
 	channel.send_eof();
 
@@ -170,6 +180,17 @@ int ConnectionHandler::on_shell_request(ssh_session /*session*/,
 {
 	auto* self	 = static_cast<ConnectionHandler*>(userdata);
 	self->got_shell_ = true;
+	return 0;
+}
+
+int ConnectionHandler::on_pty_request(ssh_session /*session*/,
+				      ssh_channel /*channel*/,
+				      const char* /*term*/, int /*cols*/,
+				      int /*rows*/, int /*py*/, int /*px*/,
+				      void* /*userdata*/)
+{
+	// Accept — puts client in raw mode (no local echo),
+	// which hides passphrase input.
 	return 0;
 }
 

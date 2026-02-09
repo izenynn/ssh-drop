@@ -8,7 +8,7 @@ Minimal SSH server that securely delivers a secret to authenticated clients.
 
 - **Flexible authentication:** public key, password, or both (multi-factor)
 - **Optional username check:** restrict connections to a specific SSH username
-- **Three secret sources:** inline value, file on disk, or environment variable
+- **Three secret sources:** inline value, file on disk, or environment variable — each optionally encrypted (client provides passphrase)
 - **Concurrent connections:** thread-per-connection model, no queueing
 - **Auth timeout:** configurable timeout for the authentication phase (default 30 s)
 - **Startup validation:** port range, key files, and secret source are checked before binding
@@ -84,11 +84,12 @@ A password source is required when `auth_method` is `password` or `both` — exa
 
 ### Optional fields
 
-| Key            | Default            | Description                                             |
-|----------------|--------------------|---------------------------------------------------------|
-| `auth_timeout` | `30`               | Seconds before an unauthenticated connection is dropped |
-| `log_level`    | `info`             | Minimum log level: `debug`, `info`, `warn`, `error`     |
-| `log_file`     | *(empty)*          | Path to a log file (see below)                           |
+| Key                | Default   | Description                                              |
+|--------------------|-----------|----------------------------------------------------------|
+| `auth_timeout`     | `30`      | Seconds before an unauthenticated connection is dropped  |
+| `log_level`        | `info`    | Minimum log level: `debug`, `info`, `warn`, `error`      |
+| `log_file`         | *(empty)* | Path to a log file (see below)                           |
+| `secret_encrypted` | `false`   | Set to `true` if the secret is encrypted (see below)     |
 
 When `log_file` is omitted, errors go to stderr and everything else to stdout.
 When `log_file` is set, output goes to **both** the console (as above) and the file.
@@ -133,6 +134,43 @@ When set, the connecting client's SSH username must match. When omitted, any use
 printf 'my-secret-value' > /etc/ssh-drop/secret
 ```
 
+### Encrypted secret
+
+When `secret_encrypted = true`, the secret source (whichever of `secret`, `secret_file`, or `secret_env` is used) is expected to contain base64-encoded encrypted data. The client must send the decryption passphrase as the first line of input after connecting. The passphrase never touches disk — it exists only in memory for the instant needed to decrypt, then is discarded.
+
+**Encryption scheme:** PBKDF2-SHA256 (210,000 iterations) derives a 256-bit key, which is used with AES-256-GCM for authenticated encryption. The output is base64-encoded text, so it works with all three secret sources.
+
+#### 1. Encrypt a secret
+
+```bash
+ssh-drop --encrypt secret/secret.enc
+```
+
+You will be prompted for a passphrase (twice for confirmation) and the secret value. The output is a base64 text file.
+
+#### Test decryption
+
+```bash
+ssh-drop --decrypt secret/secret.enc
+```
+
+You will be prompted for the passphrase. On success the decrypted secret is printed to stdout; on failure (wrong passphrase, missing file) an error is printed to stderr and the exit code is 1.
+
+#### 2. Configure the server
+
+```ini
+secret_file = secret/secret.enc
+secret_encrypted = true
+```
+
+#### 3. Connect from a client
+
+```bash
+echo "my-passphrase" | ssh user@host -p 7022
+```
+
+The client pipes the passphrase into the SSH session. The server reads it, decrypts the secret, writes the plaintext back, and closes the connection.
+
 ### Example configs
 
 Public key only:
@@ -165,6 +203,17 @@ auth_method = both
 auth_password_env = SSH_DROP_PASSWORD
 auth_user = deploy
 secret_file = /etc/ssh-drop/secret
+```
+
+Encrypted secret (public key + client passphrase):
+
+```ini
+port = 7022
+host_key = /etc/ssh-drop/id_ed25519
+authorized_keys = /etc/ssh-drop/authorized_keys
+auth_method = publickey
+secret_file = /etc/ssh-drop/secret.enc
+secret_encrypted = true
 ```
 
 ## Usage
@@ -218,6 +267,12 @@ Password mode:
 
 ```bash
 ssh localhost -p 7022 -o PreferredAuthentications=password
+```
+
+Encrypted secret mode (pipe the decryption passphrase):
+
+```bash
+echo "my-passphrase" | ssh user@host -p 7022
 ```
 
 On successful authentication the secret is printed and the connection closes.

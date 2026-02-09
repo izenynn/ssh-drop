@@ -19,6 +19,7 @@ struct ServerConfig {
 	std::optional<std::string> secret;
 	std::optional<std::string> secret_file;
 	std::optional<std::string> secret_env;
+	bool			   secret_encrypted = false;
 
 	std::string auth_method;
 

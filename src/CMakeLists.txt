@@ -9,4 +9,6 @@ target_sources(main PRIVATE
         "server_config.cpp"
         "log.cpp"
         "signal_guard.cpp"
+        "crypto.cpp"
+        "encrypt_command.cpp"
 )

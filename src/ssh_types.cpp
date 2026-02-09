@@ -179,6 +179,36 @@ void SshChannel::set_callbacks(ssh_channel_callbacks cb)
 		throw SshError{"Failed to set channel callbacks"};
 }
 
+std::string SshChannel::read(int timeout_ms)
+{
+	std::string result;
+	char	    buf[256];
+
+	for (;;) {
+		const int n = ssh_channel_read_timeout(
+				channel_, buf, sizeof(buf), 0, timeout_ms);
+		if (n < 0)
+			throw SshError{"Channel read failed"};
+		if (n == 0)
+			break;
+
+		result.append(buf, static_cast<std::size_t>(n));
+
+		// Stop at first line terminator — we only need one line
+		// PTY mode sends \r for Enter, non-PTY sends \n
+		if (result.find('\n') != std::string::npos
+		    || result.find('\r') != std::string::npos)
+			break;
+	}
+
+	// Trim trailing newline/carriage-return
+	while (!result.empty()
+	       && (result.back() == '\n' || result.back() == '\r'))
+		result.pop_back();
+
+	return result;
+}
+
 void SshChannel::write(std::string_view data)
 {
 	ssh_channel_write(channel_, data.data(),

@@ -73,10 +73,11 @@ public:
 	SshChannel(const SshChannel&)		 = delete;
 	SshChannel& operator=(const SshChannel&) = delete;
 
-	void set_callbacks(ssh_channel_callbacks cb);
-	void write(std::string_view data);
-	void send_eof();
-	void close();
+	void	    set_callbacks(ssh_channel_callbacks cb);
+	std::string read(int timeout_ms);
+	void	    write(std::string_view data);
+	void	    send_eof();
+	void	    close();
 
 	ssh_channel get() const noexcept
 	{
